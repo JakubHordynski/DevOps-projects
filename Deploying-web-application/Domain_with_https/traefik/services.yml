@@ -24,14 +24,14 @@ http:
     myapp:
       loadBalancer:
         servers:
-          - url: "http://solvro-docs:8080"
+          - url: "http://web-app:8080"
 
     dashboard:
       loadBalancer:
         servers:
-          - url: "http://solvro-docs:8080"   # example dashboard → reuse myapp
+          - url: "http://web-app:8080"   # example dashboard → reuse myapp
 
     api:
       loadBalancer:
         servers:
-          - url: "http://solvro-docs:8080"
+          - url: "http://web-app:8080"

@@ -1,0 +1,37 @@
+http:
+  routers:
+
+    myapp:
+      rule: "Host(`myapp.local`)"
+      entryPoints: ["websecure"]
+      service: myapp
+      tls: {}
+
+    dashboard:
+      rule: "Host(`dashboard.local`)"
+      entryPoints: ["websecure"]
+      service: dashboard
+      tls: {}
+
+    api:
+      rule: "Host(`api.localhost`) && PathPrefix(`/api`)"
+      entryPoints: ["websecure"]
+      service: api
+      tls: {}
+
+  services:
+
+    myapp:
+      loadBalancer:
+        servers:
+          - url: "http://solvro-docs:8080"
+
+    dashboard:
+      loadBalancer:
+        servers:
+          - url: "http://solvro-docs:8080"   # example dashboard → reuse myapp
+
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://solvro-docs:8080"

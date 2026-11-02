@@ -1,0 +1,136 @@
+git add devops/web-deploy-application/networks:
+  public:
+    external: false
+
+services:
+
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: always
+    networks:
+      - public
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/certs:ro
+      - ./traefik:/etc/traefik:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--providers.file.directory=/etc/traefik"
+      - "--providers.file.watch=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=public"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.metrics.address=:8899"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entrypoint=metrics"
+      - "--log.level=INFO"
+  solvro-docs:
+     image: solvro-docs:1.0
+     container_name: solvro-docs
+     restart: always
+     networks:
+      - public
+     volumes:
+      - ../src:/app/src
+  alertmanager:
+    image: prom/alertmanager
+    container_name: 'alertmanager'
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./alertmanager/configs/alertmanager.yml:/etc/alertmanager/config.yml
+      - alertmanager:/alertmanager
+    networks:
+      - public
+    labels:
+      - traefik.frontend.rule=Host:alertmanager.${DOMAIN:-localdns.xyz}
+      - traefik.enable=true
+      - traefik.port=9093
+      - traefik.tags=public
+      - traefik.docker.network=public
+      - traefik.redirectorservice.frontend.entryPoints=http
+
+  prometheus:
+    image: prom/prometheus
+    container_name: 'prometheus'
+    user: root
+    volumes:
+      - ./prometheus/configs/prometheus-localhost.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules/alert.rules:/etc/prometheus/alert.rules
+      - promdata:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - public
+    ports:
+      - "9090:9090"
+    labels:
+      - traefik.frontend.rule=Host:prometheus.${DOMAIN:-localdns.xyz}
+      - traefik.enable=true
+      - traefik.port=9090
+      - traefik.tags=public
+      - traefik.docker.network=public
+      - traefik.redirectorservice.frontend.entryPoints=http
+
+  grafana:
+    image: grafana/grafana
+    container_name: 'grafana'
+    depends_on:
+      - loki
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./grafana/dashboards/ds_prometheus.yml:/etc/grafana/provisioning/dashboards/ds_prometheus.yaml:ro
+    environment:
+      - GF_SERVER_ROOT_URL=http://grafana.${DOMAIN:-localdns.xyz}
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - PROMETHEUS_ENDPOINT=http://prometheus:9090
+    networks:
+      - public
+    ports:
+      - "3001:3000"
+    labels:
+      - traefik.frontend.rule=Host:grafana.${DOMAIN:-localdns.xyz}
+      - traefik.enable=true
+      - traefik.port=3000
+      - traefik.tags=public
+      - traefik.docker.network=public
+      - traefik.redirectorservice.frontend.entryPoints=http
+
+  loki:
+   image: grafana/loki:2.0.0
+   container_name: loki
+   volumes:
+     - ./loki/configs/loki.yaml:/etc/config/loki.yaml
+   entrypoint:
+     - /usr/bin/loki
+     - -config.file=/etc/config/loki.yaml
+   networks:
+     - public
+   ports:
+     - 3100:3100
+   labels:
+     - traefik.frontend.rule=Host:loki.${DOMAIN:-localdns.xyz}
+     - traefik.enable=true
+     - traefik.port=3100
+     - traefik.tags=public
+     - traefik.docker.network=public
+     - traefik.redirectorservice.frontend.entryPoints=http
+
+volumes:
+  promdata: {}
+  grafanadata: {}
+  alertmanager: {}

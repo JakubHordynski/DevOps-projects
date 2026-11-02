@@ -1,4 +1,4 @@
-git add devops/web-deploy-application/networks:
+networks:
   public:
     external: false
 
@@ -32,9 +32,9 @@ services:
       - "--metrics.prometheus=true"
       - "--metrics.prometheus.entrypoint=metrics"
       - "--log.level=INFO"
-  solvro-docs:
-     image: solvro-docs:1.0
-     container_name: solvro-docs
+  web-app:
+     image: my-web-app:1.0
+     container_name: web-app
      restart: always
      networks:
       - public

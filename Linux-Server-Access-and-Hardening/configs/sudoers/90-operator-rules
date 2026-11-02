@@ -1,0 +1,5 @@
+# Allow 'operator' user to run shutdown as root (password required)
+operator ALL=(root) /usr/sbin/shutdown
+
+# Allow 'operator' user to reboot as service user without password
+operator ALL=(sysadmin) NOPASSWD: /usr/sbin/reboot

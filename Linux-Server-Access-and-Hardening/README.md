@@ -51,6 +51,37 @@ All ready-to-use configuration files are located inside the `configs/` directory
 
 Follow these 6 stages in order to deploy the configurations onto your own Linux server or virtual machine.
 
+## Quick Automated Deployment (`setup.sh`)
+
+If you want to quickly deploy the configuration templates onto a fresh Linux server or virtual machine without copying files manually, you can use the included `setup.sh` script.
+
+### What the script does
+
+1. **Validates root privileges:** Ensures the script is executed with `sudo`.
+2. **Deploys OpenSSH Hardening:** Copies `configs/ssh/90-hardening.conf` into `/etc/ssh/sshd_config.d/`, creates required groups (`ssh-users`, `PassAuthAny`, etc.), tests the syntax with `sshd -t`, and restarts the SSH service safely.
+3. **Deploys Sudoers Policies:** Copies `configs/sudoers/90-operator-rules` into `/etc/sudoers.d/`, enforces strict `0440` permissions, and validates syntax with `visudo`.
+
+### How to use
+
+1. Clone your repository on the target Linux server:
+
+   ```bash
+   git clone https://github.com/JakubHordynski/DevOps_projects.git
+   cd DevOps_projects/Linux-Server-Access-and-Hardening
+   ```
+
+2. Grant execution permissions to the script:
+
+   ```bash
+   chmod +x setup.sh
+   ```
+
+3. Run the script with root privileges:
+
+   ```bash
+   sudo ./setup.sh
+   ```
+
 ### Stage 1: Asymmetric SSH Key Authentication & NAT Networking
 
 Using password-based SSH authentication exposes servers to brute-force attacks. In this stage, we configure asymmetric **Ed25519** cryptography.

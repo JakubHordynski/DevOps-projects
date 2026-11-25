@@ -4,7 +4,7 @@ A collection of production-ready infrastructure templates, containerization blue
 
 ## Projects in this Repository
 
-1. **[Deploying-web-application](./Deploying-web-application)**  
+1. **[Deploying-web-application](https://github.com/JakubHordynski/Deploying-web-application.git))**  
    Complete Docker multi-stage build template with Nginx, Traefik v3.0 (HTTPS), Prometheus, Loki, Grafana, and Discord alerting.
-2. **[Linux-Server-Access-and-Hardening](./Linux-Server-Access-and-Hardening)**  
+2. **[Linux-Server-Access-and-Hardening](https://github.com/JakubHordynski/Linux-Server-Access-and-Hardening.git)**  
    Modular Linux server security and remote access blueprint covering OpenSSH hardening (`sshd_config.d`), granular `sudoers.d` policies, GRUB2 serial console recovery, and Cockpit administration.
